@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import logging
+import argparse
 
 logger = logging.getLogger()
 console = logging.StreamHandler()
@@ -617,103 +618,44 @@ def check_handler(args):
 
 def for_all_handler(args):
     """run a command against all externals
-      (ie: git svn-ext for-all git grep 'whatever')"""
+      (ie: git svn-ext for-all -c 'git grep "whatever"')"""
 
-    command = " ".join(args)
+    for dir in GitSvnExternal.GetClonedPaths():
 
-    if command:
-        for dir in GitSvnExternal.GetClonedPaths():
+        current_dir = os.getcwd()
+        os.chdir(dir)
 
-            current_dir = os.getcwd()
-            os.chdir(dir)
+        print ">>> %s: %s" % (dir, command)
 
-            print ">>> %s: %s" % (dir, command)
+        os.system(command)
+        os.chdir(current_dir)
 
-            os.system(command)
+def main():
+    parser = argparse.ArgumentParser(
+        prog='git-svn-ext',
+        epilog="Note: externals may be ignored if listed in " + GitSvnExternal.ExcludesFile
+    )
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
+    subparsers = parser.add_subparsers(help='available commands')
 
-            os.chdir(current_dir)
+    parserClone = subparsers.add_parser('clone')
+    parserClone.set_defaults(func=clone_handler)
 
-    else:
-        usage()
-        sys.exit(1)
+    parserUpdate = subparsers.add_parser('update')
+    parserUpdate.set_defaults(func=update_handler)
 
+    parserCheck = subparsers.add_parser('check')
+    parserCheck.set_defaults(func=check_handler)
 
-class Handlers:
-    """Register and dispatch handlers, as well as provide documentation"""
-    def __init__(self):
-        # keep ordering
-        self.names = []
-        self.handlers = {}
+    parserCheckUnpushed = subparsers.add_parser('check-unpushed')
+    parserCheckUnpushed.set_defaults(func=check_unpushed_handler)
 
-    def add(self, name, handler):
-        self.names.append(name)
-        self.handlers[name] = handler
+    parserForAll = subparsers.add_parser('for-all')
+    parserForAll.set_defaults(func=for_all_handler)
+    parserForAll.add_argument('-c', '--command', required=True, help='a command to execute for each external')
 
-    def get(self, name):
-        if self.handlers.has_key(name):
-            return self.handlers[name]
-        else:
-            return None
-
-    def aligned_name_(self, name):
-        """string of spaces to pad command to align text"""
-
-        # find out how long the lines are so they can line up
-        max_len = 0
-        for n in self.names:
-            if len(n) > max_len:
-                max_len = len(n)
-
-        return name + " " * (1 + max_len - len(name))
-
-    def helptext(self):
-        """get description of all the handlers"""
-
-        ret = ""
-
-        for n in self.names:
-            ret += "    %s: %s\n" % (self.aligned_name_(n), self.handlers[n].__doc__)
-
-        return ret
-
-
-# NOTE: this order is preserved for usage help text
-handlers = Handlers()
-handlers.add('clone',          clone_handler)
-handlers.add('update',         update_handler)
-handlers.add('check-unpushed', check_unpushed_handler)
-handlers.add('check',          check_handler)
-handlers.add('for-all',        for_all_handler)
-
-def usage():
-    """Descriptive text of all options"""
-    print ""
-    print "Usage: " + sys.argv[0] + " <sub command> [sub command args]"
-    print ""
-    print "  sub commmands:"
-    print handlers.helptext()
-    print "  Notes:"
-    print "    externals may be ignored if listed in " + GitSvnExternal.ExcludesFile
-    print ""
+    args = parser.parse_args()
+    args.func(args)
 
 if __name__ == '__main__':
-
-    handler = None
-
-    try:
-        sub_command = sys.argv[1]
-        handler = handlers.get(sub_command)
-
-        if handler == None:
-            raise BaseException
-
-    except:
-        usage()
-        sys.exit(1)
-
-    args = []
-    if len(sys.argv) > 2:
-        args += sys.argv[2:]
-
-    handler(args)
-
+    main()

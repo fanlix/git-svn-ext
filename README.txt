@@ -30,10 +30,9 @@ Usage: ./git-svn-ext <sub command> [sub command args]
     check-unpushed : Check if local git-svn checkout has unpushed commits
     check          : run 'git status' and 'check-unpushed' for all externals
     for-all        : run a command against all externals
-      (ie: git svn-ext for-all git grep 'whatever')
+      (ie: git svn-ext for-all -c 'git grep "whatever"')
 
-  Notes:
-    externals may be ignored if listed in .git_external_excludes
+  Note: externals may be ignored if listed in .git_external_excludes
 
 Authors
 =======
