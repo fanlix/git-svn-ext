@@ -442,42 +442,14 @@ class GitSvnExternal:
         append_line_if_not_included(GitSvnExternal.LocalExclude, GitSvnExternal.ExternalsDir)
         append_line_if_not_included(GitSvnExternal.LocalExclude, self.symlink_())
 
-
+    """do the actual cloning"""
     def clone(self):
-        """do the actual cloning"""
-
-        (module, branch) = re.search("(.*)/(trunk|branch.*|tag.*)", self.remote_url).groups()
-
-        if branch == self.remote_url:
-            branch = ""
-
-        # Default
-        has_branches_tags = False
-
-        # if we found references to branches and tags, clone them
-        if module != self.remote_url:
-            has_branches_tags = True
-
-        # if we are cloning a subdirectory of a branch path, use the remote_url, and don't get tags/branch/trunk
-        # ie: if it contains some of these, but does not end with it
-        if re.search("trunk|tags|branch.*", self.remote_url):
-            if not re.search("trunk$|tags$|branch.*$", self.remote_url):
-                has_branches_tags = False
-                module = self.remote_url
-
-        # Try to figure out what the tags and branches portions are
-        tags = "tags"
-        brch = "branches"
-        branchpath = branch.split("/")[0]
-        if tags.count(branchpath): tags = branchpath
-        if brch.count(branchpath): brch = branchpath
-
         # Format the revision argument
         rev_arg = self.revision_arguments()
+        current_dir = os.getcwd()
 
         # If the directory is alread there, update it
         if os.path.isdir(self.local_storage()):
-            current_dir = os.getcwd()
             os.chdir(self.local_storage())
             run_command("git svn fetch " + rev_arg)
             # --local skips fetching (for rev pinning)
@@ -491,29 +463,9 @@ class GitSvnExternal:
             # Create dir to run clone from
             create_dir_if_not_exist(clone_dir)
 
-            current_dir = os.getcwd()
             os.chdir(clone_dir)
-
-            if has_branches_tags:
-                run_command("git svn clone %s %s --trunk trunk --branches %s --tags %s %s" % (rev_arg, module, brch, tags, rel_local_storage))
-            else:
-                # URL does not contains any trunk, branches or tags part, so we dont need
-                # additional options for git-svn
-                run_command("git svn clone %s %s %s" % (rev_arg, module, rel_local_storage))
-
+            run_command("git svn clone {0} {1} {2}".format(rev_arg, self.remote_url, rel_local_storage))
             os.chdir(current_dir)
-
-        # If we have branches and tags, checkout that directory
-        # careful, can blow aways changes!
-        # remove trailing slash
-        branch = re.sub("/$", "", branch)
-
-        if branch != "" and has_branches_tags:
-            current_dir = os.getcwd()
-            os.chdir(self.local_storage())
-            run_command("git reset --hard " + branch)
-            os.chdir(current_dir)
-
 
 
 ########### sub-command handlers #############
