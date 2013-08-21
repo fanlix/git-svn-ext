@@ -557,16 +557,15 @@ def update_handler(args):
     # get the externals dirs
     # looks at disk
     ext_paths = GitSvnExternal.GetClonedPaths()
+    current_dir = os.getcwd()
 
     for ext in externals:
         ext_path = ext.local_storage()
         if ext_paths.count(ext_path):
             print ">>> " + ext_path
-            current_dir = os.getcwd()
             os.chdir(ext_path)
             run_command("git svn fetch %s" % ext.revision_arguments())
             run_command("git svn rebase --local")
-
             os.chdir(current_dir)
 
 
@@ -638,21 +637,21 @@ def main():
     parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
     subparsers = parser.add_subparsers(help='available commands')
 
-    parserClone = subparsers.add_parser('clone')
-    parserClone.set_defaults(func=clone_handler)
+    parser_clone = subparsers.add_parser('clone')
+    parser_clone.set_defaults(func=clone_handler)
 
-    parserUpdate = subparsers.add_parser('update')
-    parserUpdate.set_defaults(func=update_handler)
+    parser_update = subparsers.add_parser('update')
+    parser_update.set_defaults(func=update_handler)
 
-    parserCheck = subparsers.add_parser('check')
-    parserCheck.set_defaults(func=check_handler)
+    parser_check = subparsers.add_parser('check')
+    parser_check.set_defaults(func=check_handler)
 
-    parserCheckUnpushed = subparsers.add_parser('check-unpushed')
-    parserCheckUnpushed.set_defaults(func=check_unpushed_handler)
+    parser_check_unpushed = subparsers.add_parser('check-unpushed')
+    parser_check_unpushed.set_defaults(func=check_unpushed_handler)
 
-    parserForAll = subparsers.add_parser('for-all')
-    parserForAll.set_defaults(func=for_all_handler)
-    parserForAll.add_argument('-c', '--command', required=True, help='a command to execute for each external')
+    parser_for_all = subparsers.add_parser('for-all')
+    parser_for_all.set_defaults(func=for_all_handler)
+    parser_for_all.add_argument('-c', '--command', required=True, help='a command to execute for each external')
 
     args = parser.parse_args()
     args.func(args)
