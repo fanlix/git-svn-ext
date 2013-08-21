@@ -424,7 +424,9 @@ class GitSvnExternal:
 
         # construct relative link
         current_dir = os.getcwd()
-        os.chdir(os.path.dirname(self.symlink_()))
+        dirname = os.path.dirname(self.symlink_())
+        if dirname:
+            os.chdir(dirname)
         rel = get_relative_base()
         os.chdir(current_dir)
 
