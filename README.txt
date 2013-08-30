@@ -16,7 +16,7 @@ method:
   you're not pestered about it when performing a git status.
 
 but the code has been converted to python as one script with
-sub-commands, supports newer subversion urls, and adds a few new
+sub-commands, supports newer subversion urls (1.6+), and adds a few new
 features.
 
 From the usage output:
@@ -25,12 +25,10 @@ Usage: ./git-svn-ext <sub command> [sub command args]
 
   sub commmands:
     clone          : clone all svn externals into .git_externals
-      (warning: removes local changes and commits on subsequent runs)
     update         : Updates all svn externals (git svn fetch[ --revision]/rebase --local)
-    check-unpushed : Check if local git-svn checkout has unpushed commits
-    check          : run 'git status' and 'check-unpushed' for all externals
+    check          : Check if local git-svn checkout has unpushed commits and uncommitted changes
     for-all        : run a command against all externals
-      (ie: git svn-ext for-all -c 'git grep "whatever"')
+      (ie: git svn-ext for-all 'git grep "whatever"')
 
   Note: externals may be ignored if listed in .git_external_excludes
 
@@ -41,7 +39,3 @@ Authors
 - Alexander Artemenko <svetlyak.40wt@gmail.com>
 - Wade Berrier <wberrier@gmail.com>
 
-TODO
-====
-- make clone not blow stuff away
-- handle the case when externals are removed or altered
