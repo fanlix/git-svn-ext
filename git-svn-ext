@@ -53,8 +53,9 @@ def create_dir_if_not_exist(dir):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-def run_command(command):
-    print command
+def run_command(command, echo=True):
+    if echo:
+        print command
     os.system(command)
 
 def info(msg, *args):
@@ -493,8 +494,8 @@ class GitSvnExternal:
         current_dir = os.getcwd()
         os.chdir(self.local_url)
 
-        print(white(">>> {0}", self.name()))
-        run_command(command)
+        self.printMessage(command)
+        run_command(command, False)
 
         os.chdir(current_dir)
 
@@ -530,7 +531,7 @@ def clone(args):
         if not cloned_external.local_url in local_urls:
             cloned_external.askRemove()
 
-def performAction(action):
+def performAction(action, *args):
     Git.goto_root()
 
     # We are not in toplevel, perform for single instance
@@ -544,7 +545,7 @@ def performAction(action):
         fail("no cloned svn externals found")
 
     for external in externals:
-        getattr(external, action)()
+        getattr(external, action)(*args)
 
 def update(args):
     performAction('update')
@@ -552,15 +553,8 @@ def update(args):
 def check(args):
     performAction('check')
 
-def for_all(args):
-    Git.goto_root_ext()
-
-    externals = Git.get_cloned_externals()
-    if not externals:
-        fail("no svn externals found")
-
-    for external in externals:
-        external.execute(args.command)
+def execute(args):
+    performAction('execute', args.command)
 
 def main():
     if sys.platform == 'win32':
@@ -582,8 +576,8 @@ def main():
     parser_check = subparsers.add_parser('check')
     parser_check.set_defaults(func=check)
 
-    parser_for_all = subparsers.add_parser('for-all')
-    parser_for_all.set_defaults(func=for_all)
+    parser_for_all = subparsers.add_parser('execute')
+    parser_for_all.set_defaults(func=execute)
     parser_for_all.add_argument('command', help='a command to execute for each external')
 
     args = parser.parse_args()

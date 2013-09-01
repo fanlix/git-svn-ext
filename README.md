@@ -17,7 +17,7 @@ Sub commmands:
 * `clone`   clone all svn externals into .git_externals
 * `update`  updates all svn externals (git svn fetch[ --revision]/rebase --local)
 * `check`   check if local git-svn checkout has unpushed commits and uncommitted changes
-* `for-all` run a command against all externals (ie: `git svn-ext for-all 'git grep "whatever"'`)
+* `execute` run a command against all externals (ie: `git svn-ext execute 'git grep "whatever"'`)
 
 *Note: externals may be ignored if listed in `.git_external_excludes`*
 
