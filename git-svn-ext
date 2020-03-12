@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import sys
 import os
@@ -163,7 +163,8 @@ class Git:
 
     @staticmethod
     def _format_revision_arg(revision):
-        return "--revision BASE:{0}".format(revision) if revision else ""
+        #return "--revision BASE:{0}".format(revision) if revision else ""
+        return "--revision {0}".format(revision) if revision else "HEAD"
 
     @classmethod
     def update_from_svn(cls, revision=""):
@@ -378,7 +379,7 @@ class GitSvnExternal:
         self.local_url = local_url
         self.local_dir = local_dir
         self.remote_url = remote_url
-        self.revision = revision
+        self.revision = revision or "HEAD"
 
     @classmethod
     def fromSvnExternal(cls, svn_external):
